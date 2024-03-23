@@ -1,0 +1,37 @@
+[프로젝트 생성]
+jar사용시 /resources/static/index.html위치에 index.html파일을 두면 Welcome페이지로 처리해줌(정적 컨텐츠 위치에 /index.html)
+
+
+[로깅 간단히 알아보기]
+- 실행시 디버깅할때 print함수로 찍어보는 대신 쓰는 거
+- SLF4J 인터페이스, Logback 구현체
+- 스프링부트에 기본 장착됨
+- 로그사용시 장점 : 쓰레드, 클래스 이름같은 부가 정보가 함께 출력, 개발서버/운영서버 간 상황에 맞게 설정가능, 콘솔에만 남는게 아닌 파일로도 남길수 잇음, 성능도 print함수보다 좋음
+- 실무에서 꼭 사용
+
+사용법1 _원하는 클래스에 적용
+ex)
+사용할 클래스위에 @Slf4j
+@RequestMapping("/log-test")
+public String logTest(){
+  String name = "Spring";	// 이 name을 찍어보려는 목적임
+  log.info("info log={}, name);	// trace, debug, info, warn, error 메서드 사용가능
+  log.info("info userId={}, orderId={}", userId, orderId);  //2개 이상 사용 가능
+  return "ok";
+}
+
+사용법2 -1 _원하는 폴더단위에 적용
+application.properties파일에서
+logging.level.뒤에 프로젝트의 main - java 폴더의 하위 폴더부터 작성
+ex) logging.level.hello.springmvc=info
+* info는 로그레벨 _개발서버면 debug로(더 자세하게), 운영(배포)서버면 info로
+
+사용법2 -2 _프로젝트 전체에 적용
+logging.level.root=info
+
+=> 요약 : 2-1과 2-2 혼합 사용
+
+
+* 로그 레벨 TRACE > DEBUG > INFO > WARN > ERROR
+
+

@@ -1,0 +1,68 @@
+섹션6-4의 HTTP 요청메시지를 통한 데이터 전달 방법 3가지 중, 
+3번 방법인 'HTTP 메시지 바디'를 통한 전달을 처리 하는 방법
+3 -1. 단순 텍스트인 경우 
+3 -2. JSON 형식의 데이터인 경우 _보통 이 JSON 방식 사용
+
+공통
+- POST, PUT, PATCH
+
+
+[HTTP 요청 메시지 - 단순 텍스트]
+
+HTTP 요청 메시지의 HTTP 바디를 통해 전달된 "Text를 꺼내읽는 방법"
+- 읽기 : 파라미터에서 @RequestBody를 이용해 String으로 받기
+- 응답 : @ResponseBody어노테이션을 써주고, 데이터를 바로 return시키기
+
+ex)
+@ResponseBody
+@PostMapping("/request-body-string-v4")
+public String requestBodyStringV4(@RequestBody String messageBody) {
+
+  log.info("messageBody={}", messageBody);
+  return "ok";
+}
+
+* @ResponseBody : 응답결과를 HTTP 메시지바디에 직접 담아 전달(view사용X)
+
+=> 요청 데이터 처리 2가지
+요청 파라미터(쿼리 스트링)를 조회 : @RequestParam, @ModelAttribute
+HTTP 메시지를 직접 조회하는 기능 : @RequestBody
+
+
+
+[HTTP 요청 메시지 - JSON]
+
+HTTP 요청 메시지의 HTTP 바디를 통해 전달된 "JSON 데이터를 꺼내읽는 방법"
+- 읽기 : @RequestBody와 DTO객체를 이용 _DTO객체 : 섹션6-4에 6번 참고
+- 응답 : @ResponseBody와 DTO객체를 이용
+
+* "HTTP 메시지 컨버터"가 
+@RequestBody를 쓰면 파라미터 받을 때 JSON을 DTO객체로, 
+@ResponseBody를 쓰면 return할때 DTO객체를 JSON으로 변환해줌
+
+ex)
+@ResponseBody
+@PostMapping("/request-body-json-v3")
+public String requestBodyJsonV3(@RequestBody HelloData helloData) {
+
+  //JSON 형식의 데이터를 DTO객체인 HelloData객체로 변환하여 받아서 사용
+  log.info("username={}, age={}", helloData.getUsername(), helloData.getAge());
+ 
+  //String을 JSON 형식으로 변환하여 return
+  return "ok";
+
+  //DTO객체인 HelloData를 JSON 형식으로 변환하여 return도 가능
+  //ex) return helloData;  (return type - HelloData로 고치기)
+}
+
+* @RequestBody와 @ModelAttribute 비교
+- 여기서는 JSON 데이터를 @RequestBody를 이용해 DTO객체로 변환해 받음,
+섹션6-4 6번에서는 요청 파라미터(쿼리스트링)를 @ModelAttribute를 이용해 DTO객체로 변환해 받음
+- @ModelAttribute는 생략 가능하지만, 여기서 @RequestBody는 생략 불가능 _생략하면 @ModelAttribute가 생략된걸로 인식함
+
+* 주의 : HTTP 요청시 content-type이 application/json인지 확인
+
+
+
+* HttpEntity<HelloData>를 이용한 방법도 있음(강의나 구글링)
+

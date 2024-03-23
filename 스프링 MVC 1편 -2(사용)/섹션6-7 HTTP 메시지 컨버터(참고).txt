@@ -1,0 +1,39 @@
+[HTTP 메시지 컨버터]
+
+HTTP 메시지 컨버터 : 
+* 인터페이스로 구현
+
+스프링입문편 설명
+
+웹브라우저 -> 내장 톰캣 서버 -> 스프링컨테이너(controller)
+-> HttpMessageConverter(JsonConveter, StringConverter) -> 웹 브라우저
+
+
+사용되는 경우
+HTTP 요청 : @RequestBody 
+HTTP 응답 : @ResponseBody - HTTP의 Body에 문자 내용을 직접 반환
+
+
+* 다양한 메시지 컨버터가 존재, 대상 클래스 타입 & 
+@Request로 받을 땐 HTTP 요청의 Content-Type,
+@Response로 보낼 땐 HTTP 요청의  Accept 미디어 타입을 참고해 결정
+- 기본 문자 처리 : StringHttpMessageConverter
+클래스 타입 : String
+요청 예) @RequestBody String data Content-Type 타입 : */*
+응답 예) @ResponseBody return "ok" Accept 미디어 타입 : text/plain
+
+- 기본 객체 처리 : MappingJacksonHttpMessageConverter
+클래스 타입 : 객체 또는 HashMap
+요청 예) @RequestBody HelloData data Content-Type 타입 application/json
+응답 예) @ResponseBody return helloData Accept 미디어 타입 : application/json
+
+- 바이트 처리도 있음
+
+
+
+
+
+
+
+
+

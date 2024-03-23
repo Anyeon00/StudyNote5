@@ -1,0 +1,74 @@
+[프론트 컨트롤러 패턴 소개]
+저번 장의 한계를 개선하기 위해, 프론트 컨트롤러 패턴 도입
+
+프론트 컨트롤러 패턴 특징
+- 프론트 컨트롤러(서블릿) 하나로 클라이언트의 요청들을 받음
+- 프론트 컨트롤러가 요청에 맞는 컨트롤러를 찾아 호출
+- 입구가 하나가 됨
+- 반복코드 공통처리 가능(extends 서블릿, 어노테이션 처리등등)
+-> 스프링의 "DispatcherServlet"이 이 패턴으로 구현됨
+
+
+[프론트 컨트롤러 도입 - v1]
+
+프론트 컨트롤러가 HTTP요청을 받으면, 
+URL 매핑정보에서 해당하는 컨트롤러를 조회해,
+해당 컨트롤러 호출
+
+1. 컨트롤러 인터페이스를 구현
+1-1. 요청은 인터페이스에 의존하고, 구현하는 클래스들이 알아서 호출됨
+
+2. 이를 구현하는 컨트롤러들을 구현(saveController, joinController..등등)
+
+3. 프론트 컨트롤러 생성
+3-1. 프론트 컨트롤러만 서블릿을 상속
+3-2. @WebServlet(urlPatterns = "/frontcontroller/*") 이렇게 쓰면, /frontcontroller하위의 모든 url을 호출해도 이 프론트컨트롤러가 호출됨
+3-3. 매핑정보를 담은 HashMap 생성 후 생성자에서 바로 url주소를 key, 그에 맞는 컨트롤러 객체를(new해서) value로 해서 put
+3-4. 오버라이딩한 service메서드에서, 파라미터의 request객체로 요청받은 uri를 String으로 꺼냄, 이걸 key로 Map에서 컨트롤러를 꺼내서 인터페이스 객체로 업캐스팅(ControllerInterface controller = map.get("url");)
+그리고 그 인터페이스의 메서드 실행(호출)
+
+-> url들을 모두 프론트 컨트롤러로 받아서, url(String)에 매핑된 컨트롤러들을 호출하는 것 까지
+
+
+[View 분리 - v2]
+각 컨트롤러들이 jsp를 호출하는 코드들을 view객체를 만들어 해당 객체를 통해 처리
+
+
+[Model 추가 - v3]
+여러가지 refactoring
+
+1. 각 controller입장에서 request객체는 필요없음, request에 담긴 parameter정보만 Map으로 받으면 됨
+(프론트 컨트롤러에서 Map을 생성해 각 controller에 넘겨줌 
+-> 각 controller가 servlet기술을 안써도 됨)
+
+2. 뷰로 넘길 때, Model로써 request객체를 넘기는 대신 별도의 Model객체를 사용
+(-> 마찬가지로 각 controller가 servlet기술을 안써도 됨)
+
+=> 즉 여기까지 각 controller가 서블릿 기술을 전혀 사용하지 않도록 변경
+
+3. 뷰 리졸버 : 뷰 이름의 중복을 제거
+(여러 controller에서 사용하는 jsp경로의 중복되는 부분)
+-> 각 컨트롤러가 논리적 이름을 사용하고, 이를 풀 경로로 parsing해주는 함수
+ex) return "/WEB-INF/views" + viewName + ".jsp";
+
+-> 컨트롤러는 jsp파일 풀경로가 아닌 논리적 이름만 반환, 프론터 컨트롤러에서 뷰 리졸버가 작동
+
+=> 뷰들 폴더의 경로가 변경돼도, 프론트 컨트롤러만 수정하면 됨
+=> 2번, 3번은 ModelView객체를 이용 
+(String viewName, Map<String, Object> model)
+* 각 controller가 ModelView객체를 다시 프론트컨트롤러로 return해주고, 프론트 컨트롤러에서 그걸로 rendering해서 끝나게 됨 _3번 내용과 일맥 상통
+
+
+=>이까지 정리하면,
+1. url요청이 오면 프론트 컨트롤러에서 받아서, url에 해당하는 controller인스턴스가 controller인터페이스 변수에 dynamic binding됨
+2. request객체에서 controller가 사용할 정보를 뽑아서, Map을 생성해 저장
+3. 1의 controller의 로직 메서드를 실행하며, 2에서 생성한 Map을 파라미터로 넘김
+4. 해당 controller가 로직을 실행하고, 그 결과(Model과 View경로의 논리적이름)를 ModelView객체에 담아 프론트 컨트롤러에 return함 _View경로=jsp파일경로
+5. ModelView에 담긴 viewName(논리적이름)을 뷰 리졸버(함수)로 jsp파일경로로 parsing함
+6. 4에서 controller가 return해준 ModelView에 담긴 Model과, 5에서 뷰리졸버로 parsing한 jsp파일주소를 이용해 마지막으로 rendering함수를 실행함
+7. redering함수에서, model과 jsp의 path와 request객체와 response객체를 이용해, 실제 model인 request에 setAttribute에 model이 가진 정보를 세팅, foward함수로 jsp파일 호출 및 http응답메시지 생성등등 후처리
+
+
+
+
+

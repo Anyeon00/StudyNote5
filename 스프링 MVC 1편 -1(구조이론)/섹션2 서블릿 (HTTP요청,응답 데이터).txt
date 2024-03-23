@@ -1,0 +1,74 @@
+[프로젝트 설정]
+서블릿으로 웹 서버 만들어 보기
+
+springboot에서 jsp사용을 위해 jar말고 war로 설정
+
+1. HttpServlet을 상속받는 class생성
+(어노테이션의 속성을 통해, 이 클래스로 처리할 url주소지정)
+2. 오버라이드한 service메서드, 파라미터로 request와 response
+3. 파라미터로 받은 request객체로 http요청정보, 응답데이터는 response객체에 담아 처리
+(섹션1-1 서블릿 참고)
+
+
+
+[HttpServletRequest] 클라이언트가 서버에 요청할 때
+클라이언트가 보낸 HTTP 요청 메시지를 직접 parsing해도 되지만 서블릿이 request객체를 제공해줌
+*http 메세지 _http강의 메모 참고
+
+[HTTP 요청 데이터]
+클라이언트가 HTTP 요청 메시지를 통해 데이터를 서버로 전달하는 방법 3가지
+1. GET - 쿼리 파라미터 (검색, 필터, 페이징등에 많이 사용)
+2. POST - HTML Form (회원가입하거나 상품주문에 많이 사용)
+3. POST - HTTP 메시지 바디 (HTTP API에서 주로 사용, JSON형태)
+
+1. GET 쿼리 파라미터
+- HTML Form에 입력된 정보를 가져옴(로그인, 검색, ...)
+- 말그대로 url에 쿼리파라미터에 데이터를 넣어 요청
+- 쿼리 파리미터는 URL에 '?'로 시작, 추가 파라미터는 '&'로 구분
+- request객체에서 getParameter메서드를 이용해 접근 가능
+
+2. POST HTML Form
+- 메세지 바디에다 쿼리 파라미터 형식으로 입력해 전달
+(submit버튼을 눌르면, 메세지 바디에다 name=kim&age=20 이렇게 적어서 보내줌)
+- 메세지 바디에 들어가므로 http메세지 헤더에 content-type이 존재
+- 마찬가지로 request객체에서 getParameter메서드로 접근 가능
+* postman 사용하면, Form형태로 데이터전달하는 테스트를 위해 html코드를 작성할 필요 없음
+
+3. HTTP 메시지 바디 (API 메시지 바디)
+- 1,2는 html을 사용하는 방식, 3은 http 또는 rest api 방식
+- 메시지 바디에다 데이터를 JSON 형태로 입력해 전달 (content-type : json)
+- POST, PUT, PATCH 메서드 사용
+
+
+[HttpServletResponse] 서버가 클라이언트에 응답할 때
+HttpServletResponse에 필요한 데이터를 주면, Http 응답 메시지를 만들어줌
+- HTTP응답코드, 헤더, 바디
+- response객체의 메서드로 설정
++편의기능 메서드 : Content-Type, 쿠키, Redirect
+
+[HTTP 응답 데이터]
+HTTP 응답 메시지는 주로 다음 내용을 담아서 전달
+1. HTML 응답
+*http헤더의 content-type을 html, charset을 utf-8로 설정하고, body에 html파일 작성하면 클라이언트쪽에서 html로 렌더링 됨
+2. HTTP 메시지 바디 (HTTP API) (위 요청 데이터 3번과 마찬가지로 body에 JSON 형태로 입력해 전달, 단순 text를 담아서 보낼 수도 있음)
+
+
+
+* 모두 각각 HTML인지 text인지 json인지 보내는 데이터 형태에 따라서 http헤더의 content-type설정해줘야함, text인 경우는 utf-8로 인코딩도 설정해줘야함
+-> servlet의 response객체의 setHeader메서드 제공
+
+
+결론 => Servlet이 요청 데이터와, 응답 데이터 처리를 편리하게 도와줌
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,34 @@
+[HTML, HTTP API, CSR, SSR]
+
+클라이언트 요청시
+1. 정적 html파일을 내려줌
+2. 서버에서 동적으로 렌더링한 html파일을 내려줌(JSP,타임리프)
+3. 서버에서 data를 보내줌(Json) _HTTP API
+
+HTTP API
+- 다양한 시스템 연동
+- 주로 Json형태
+- 접점 :
+1. 앱 클라이언트
+2. 웹 브라우저의 자스를 통한 http api호출
+3. React같은 웹 클라이언트
+
+Server Side Rendering _SSR
+- 서버에서 동적으로 Html을 렌더링해서 클라이언트에 내려줌
+
+Client Side Rendering _CSR
+- 클라이언트의 웹 브라우저에 있는 자스가 Html을 동적으로 생성함
+- 주로 동적인 화면에 사용
+ex) 구글 지도
+- 관련기술 : React, Vue.js
+- 과정:
+1. html요청 -> 내용이 없는 html, 자스 링크 응답(자스를 어떻게 사용할지 정보)
+2. 자스요청 -> 클라이언트 로직과 html렌더링 코드가 담긴 자스 응답(html을 어떻게 생성할지)
+3. HTTP API로 데이터요청 -> json정보 응답
+
+* SSR -> JSP, 타임리프 _백엔드개발자
+* CSR -> React, Vue.js _웹 프론트엔드 개발자
+
+어디까지 알아야 하나
+백엔드는 SSR - 타임리프 
+

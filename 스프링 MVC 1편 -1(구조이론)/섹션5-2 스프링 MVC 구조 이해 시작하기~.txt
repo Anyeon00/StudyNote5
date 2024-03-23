@@ -1,0 +1,55 @@
+[시작하기]
+Annotation기반 핸들러매핑과 핸들러어댑터조회
+
+이전에는 컨트롤러 클래스의 url을 키로 매핑함,
+이 버전에선 컨트롤러 클래스에 들어가서 메서드의 url을 키로 매핑함
+(url은 각각 어노테이션속성으로 작성됨)
+-> @Controller가 붙은 클래스에 들어가 @RequestMapping메서드의 속성의 url을 확인함
+* 어떻게 클래스에 들어가서 확인하는가? -> 리플렉션기술
+
+* 자세 설명 : RequestMappingHandlerMapping이 @Controller를 보고(키로) 해당 클래스로 들어가, @RequestMapping이 붙은 메서드의 url정보를 확인해서 해당 컨트롤러를 꺼내옴
+
+RequestMappingHandlerMapping이 컨트롤러를 찾고
+(핸들러매핑이 핸들러를 매핑하고)
+RequestMappingHandlerAdapter가 컨트롤러를 실행해줌
+*핸들러매핑과 핸들러어댑터 설명은 이전 섹션5-1 필기 참고
+
+
+[컨트롤러 통합]
+기존 : 한 @Controller클래스안에 들어가서 @RequestMapping메서드의 속성의 url을 확인하고 맞으면 해당 클래스를 꺼내사용, 아니면 다른 @Controller클래스로 가서 확인을 반복함
+-> @Controller클래스 하나에 @RequestMapping메서드들을 모아 놓음 
+* 메서드 이름 다 다르게 변경
+
+
+[실용적인 방식]
+섹션4의 v3에서 v4로 바꾼 것과 같이, 어노테이션 기반 컨트롤러도 마찬가지로 이렇게 사용가능 _섹션4 참고
+
+***실무에서는 지금부터와 같은 방식 사용
+
+- ViewName 직접 반환
+ModelAndView를 반환하지 않고, 논리적 이름만 반환(return type: String)
+
+- Model 도입
+컨트롤러에서 만들어내 뷰에 넘겨줄 정보를 저장하기 위한 Model객체를 프론트컨트롤러로부터 파라미터로 받아와서 사용, model.addAttribute("키", value)로 저장
+
+- 사용하기 위한 정보를 파라미터로 받아올 때, HttpServletRequest객체 대신 @RequestParam사용
+ex) public String save(@RequestParam("username") String name){~}
+//request.getParamter("username")과 같음
+
+- @RequestMapping -> @GetMapping, @PostMapping사용
+Get, Post 구분하기 위해
+
+
+[정리]
+지금까지 쓴게 정리해서 쓴거임
+
+각 기능들에 대한 자세한건 설명은 이 다음부터 시작
+
+
+
+
+
+
+
+
+

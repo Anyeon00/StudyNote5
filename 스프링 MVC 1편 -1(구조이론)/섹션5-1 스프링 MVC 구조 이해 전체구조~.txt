@@ -1,0 +1,47 @@
+[스프링 MVC 전체 구조]
+- 이전 섹션의 v5와 같은 구조로 구현되어 있음
+- 스프링 MVC의 프론트 컨트롤러 = DispatcherServlet _물론 servlet객체임(http요청을 받는)
+- 스프링 부트는 DispatcherServlet을 서블릿으로 자동으로 등록함, 모든 경로에 대해 매핑함(urlpatterns="/")
+
+- 흐름 :
+1. DispatcherServlet은 servlet을 상속받는객체이므로 service가 호출되면, 로직을 따라 dodispatcher가 호출됨
+2. 요청받은 handler정보로 hanlder adapter를 찾고(핸들러 매핑, 핸들러어댑터 조회), 그 어댑터로 핸들러의 실행 메서드 handle()을 호출함
+3. 실행 메서드가 처리되고나서 model&view를 return받음
+4. render가 호출됨 _뷰 리졸버로 jsp같은 뷰 파일의 논리적주소를 물리적 주소로 parsing해서 찾음, response메시지 생성후 응답
+
+=> 이렇게 핵심 동작방식을 알아두어야 향후 문제 발생시 원인파악과 해결 또는 확장이 가능하다.
+
+
+
+[핸들러 매핑과 핸들러 어댑터]
+핸들러 매핑 : 전에 했던거, 프론트 컨트롤러에서 해당 url요청을 처리하는 핸들러객체(컨트롤러)를 꺼내오기 위해, url주소를 키로 넣어놓은 Map 컨테이너를 이용하는 것 
+-> 그 핸들러 객체로 (핸들러어댑터 컨테이너에서)그 핸들러어댑터를 찾음
+
+
+스프링 부트가 자동 등록하는 핸들러 매핑과 핸들러 어댑터의 대표적인 예
+HandlerMapping
+- RequestMappingHandlerMapping : 어노테이션을 키로 매핑 한다는 것(어노테이션 기반의 컨트롤러인 @RequestMapping에서 사용)
+- BeanNameUrlHandlerMapping 스프링 빈 이름으로 매핑
+ex) @Component("/springmvc/old-controller") //괄호안이 이 빈의 이름
+
+HandlerAdapter
+- RequestMappingHandlerAdapter : 마찬가지로 어노테이션을 키로 찾아온 핸들러객체의 어댑터 (마찬가지로 어노테이션 기반의 컨트롤러인 @RequestMapping에서 사용)
+- HttpRequestHandlerAapter : 이런것도 있음
+
+* 프론트 컨트롤러에 http 요청이 들어오면 여러가지 핸들러매핑과 핸들러 어댑터들을 순서대로 다 찾아봄
+
+=> 내가 핸들러(컨트롤러)만 만들면, 스프링이 알아서 프론트컨트롤러에서 위의 것들을 통해 매핑하고, 찾은 어댑터로 내가 만든 컨트롤러를 실행해줌!!
+=> 실무에선 가장 우선순위가 높은 핸들러 매핑과 핸들러 어댑터인 RequestMappingHandlerMapping, RequestMappingHandlerAdapter를 사용(어노테이션 기반의 컨트롤러를 지원하는 매핑과 어댑터임, 뒤에서 설명)
+
+
+
+[뷰 리졸버]
+핸들러는 논리적인 이름으로 Model&View를 프론트컨트롤러에 return함
+
+스프링부트에서 이를 처리하는 뷰 리졸버 구현체들 예시
+- BeanNameViewResolver : return된 이름과 같은 Bean을 찾아서 반환함
+- InternalResourceViewResolver : parsing해서 jsp를 처리하는 뷰를 찾아 반환함
+- ThymeleafViewResolver(dependency추가해야함) : 타임리프 뷰 리졸버
+
+
+
