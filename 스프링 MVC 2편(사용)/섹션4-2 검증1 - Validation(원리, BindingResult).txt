@@ -1,0 +1,47 @@
+[BindingResult1] 		*BindingResult객체 소개
+Version 2 (스프링이 제공하는 검증 기능)
+
+BindingResult 클래스 사용
+- 설명 : 검증 오류를 보관하는 객체 (Version1의 Map<> errors 역할)(스프링제공)
+- 사용 : 파라미터에서 DTO객체 뒤에 추가
+ex) public String addItem(@ModelAttribute Item item, BindingResult bindingResult)
+* 파라미터에서 앞에 있는 DTO객체 item에 잘못된 값이 오는경우, 그 뒤에 있는 bindingResult에 담김 _순서중요
+
+
+- 예시
+//1. 검증 오류를 보관
+//파라미터의 BindingResult 객체에 보관
+
+//2. 검증 로직
+// item가격이 null이거나 범위를 벗어난 경우
+if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
+  bindingResult.addError(new FieldError("item", "price", "가격은 1,000 ~ 1,000,000 까지 허용합니다."));
+}
+// FieldError생성자 파라미터 : (ModelAttribute객체이름, 필드이름, 출력오류메시지) //전부 String
+* 객체의 필드 에러가 아니라면 new ObjectError(ModelAttribute객체이름, 출력오류메시지)
+
+//3. 검증에 실패하면 다시 입력 폼으로
+if (bindingResult.hasErrors()) {
+    return "validation/v1/addForm";
+}
+
+//4. 이하로는 성공 로직
+
+//5. html파일에서 타임리프로 오류메시지 출력하도록 수정작업(강의 자료 참고)
+
+
+
+
+[BindingResult2] 
+BindingResult에 검증 오류를 적용하는 3가지 방법
+1. @ModelAttribute에 넘어온 객체의 타입오류 -> 스프링이 BindingResult에 오류 생성
+2. 개발자가 직접 ex) new FieldError(~~)
+3. Validator 사용 _나중에 설명
+
+
+
+
+
+
+
+

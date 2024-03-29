@@ -1,0 +1,104 @@
+[오류 코드와 메시지 처리1]	* 오류 메시지(errors.properties) 작성법_마지막부분확인
+
+*앞부분은 이론, 여긴 좀 대충 썼음, 나중에 강의 다시 보던가
+
+Validation 실패 시 보낼 "오류메시지"를 관리
+
+ver1
+1. resources 디렉토리 - errors.properties파일 생성
+2. application.properties - spring.messages.basename=errors 입력
+3. errors.properties - 메시지 입력
+ex)
+required.item.itemName=상품 이름은 필수입니다.
+4. 앞에 key를 FieldError파라미터의 argument로 넣음
+....자세내용은 강의참고 그냥 최종 사용법만 알자..
+
+=> FieldError객체의 파라미터 codes, arguments와 errors.properties파일의 오류메시지를 이용
+
+* 오류메시지 깨짐 -> settings - Editor - Code Style - File Encodings - UTF-8선택, Transparent어쩌고 체크
+
+
+[오류 코드와 메시지 처리3]
+
+메시지를 계층적으로 만들어두어, 범용적으로 사용은 상위레벨, 구체적 사용은 하위레벨로 사용
+errors.properties ex)
+required.item.itemName=상품 이름은 필수 입니다. #required의 자세내용
+required=필수 값 입니다.
+
+사용 ex)
+bindingResult.	rejectValue("itemName", "required") //required계층에서 구체적인 내용을 우선순위로 선택
+
+
+[오류 코드와 메시지 처리4]
+rejectValue()는 내부에서 MessageCodesResolver를 사용
+객체이름, 필드이름 등등을 넣어주면, 위에 쟤가 errors.properties에서 썼던 key값들을 생성해줌
+
+FieldError ex) rejectValue("itemName", "required")
+required.item.itemName		#code.object.field
+required.itemName		#code.field
+required.java.lang.String		#code.type
+required				#code
+# 구체적인 순서대로
+
+ObjectError ex) reject("totalPriceMin")
+totalPriceMin.item		#code.object
+totalPriceMin		#code
+
+
+[오류 코드와 메시지 처리5]
+
+=> 오류 코드 관리 전략
+핵심은 구체적인 것에서 덜 구체적인 것으로
+* 크게 중요하지 않은 메시지는 범용성 있는 'required'같은 메시지로,
+정말 중요한 메시지는 구체적으로 적어서 사용!
+
+error.properties ex)
+#Level1	code.object.field		#레벨별로
+required.item.itemName=상품 이름은 필수입니다.
+range.item.price=가격은 {0} ~ {1} 까지 허용합니다.
+
+#Level2 	code.field 
+#생략
+
+#Level3	code.type
+required.java.lang.Integer=필수 숫자입니다.
+range.java.lang.String=필수 문자입니다.
+
+#Level4	code
+required = 필수 값 입니다.
+range = {0} ~ {1} 범위를 허용합니다.
+
+*보다시피 여기서 코드code 는 required, range
+
+
+[오류 코드와 메시지 처리6]
+검증 오류 "코드" 2가지
+- 개발자가 직접 설정한 오류 코드 rejectValue()를 직접 호출
+- 스프링이 직접 검증오류에 추가한 경우(주로 타입 정보 오류)
+ex) typeMismatch <- 스프링이 만들어 놓은 오류 코드
+
+-> 개발자가 스프링이 만든 코드를 이용해 메시지 추가 가능
+errors.properties ex)
+#추가
+typeMismatch.java.lang.Integer=숫자를 입력해주세요.
+typeMismatch=타입 오류입니다.
+
+
+
+
+
+
+=> 오류코드 & 메시지 작성 요약
+1. resources 디렉토리 - errors.properties파일 생성
+2. application.properties - spring.messages.basename=errors 입력
+3. errors.properties - 메시지 입력
+4. 오류코드&메시지 작성 - [오류코드와 메시지처리5, 6 참고]
+5. 코드만 사용하면 메시지가 레벨 우선순위에 따라 선택되어 사용됨
+-> 사용하는 부분은 다음 파트부터
+*application.properties만 고치면 모든 오류 메시지를 관리 가능
+
+
+
+
+
+
