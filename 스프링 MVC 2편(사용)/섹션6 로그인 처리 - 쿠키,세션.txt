@@ -1,0 +1,189 @@
+[로그인 요구사항]		*좀 긴데 그냥 쭉 읽어보고 사용하기
+로그인 전
+- 회원 가입
+- 로그인
+
+로그인 후
+- 로그인 성공 표시
+- 상품 관리
+- 로그 아웃
+
+보안 요구사항
+- 로그인 사용자만 상품에 접근, 관리 가능
+- 로그인 하지 않은 사용자가 상품 관리에 접근하면 로그인 화면으로 이동
+
+[회원 가입]
+repository 구현 중, 아이디로 회원찾기 _findByLoginId()
+- null이 나올 수도 있으므로 Optional사용 (스프링폴더 하위 기타 메모 참고)
+------------------------------------------------------------------------------------
+원리
+
+[로그인 기능] 
+
+로그인 기능(회원 검증 기능) 만들기
+
+1.
+@Service 
+class LoginService 구현
+
+public Member login(String loginId, String password){
+  // 1. 위의 findByLoginId()로 꺼내서, password검증
+  // 2. 성공시 return member, 실패시 return null
+
+  return memberRepository.findByLoginId(loginId).filter(m -> m.getPassword().equals(password)).orElse(null); // 축약한 코드
+}
+//return null이면 로그인 실패 
+
+2.
+컨트롤러에서 해당 빈 주입받아 사용
+(파라미터 validate후, 세션생성후 저장)
+
+
+[로그인 처리하기 - 쿠키 사용]
+쿠키 : HTTP웹기본지식 - 섹션7 참고
+
+로그인 성공시 응답으로 "쿠키" 전달
+1. 쿠키 생성 new Cookie()
+2. HttpServletResponse객체에 담기 response.addCookie("회원아이디", "회원PK")
+
+클라이언트가 쿠키가지고 접속 시도시
+1. 컨트롤러의 파라미터에서 @CookieValue받기
+ex) public String homeLogin(@CookieValue(name = "memberId", required = false) Long memberId)
+2. 쿠키없으면, 기본 홈화면
+3. 위 memberId로 repository.findById() 했는데 null일시, 기본 홈화면
+4. 모두 성공시 회원용 홈화면
+
+로그아웃 url 요청시
+1. 시간이 0인 쿠키 생성해 보내기
+ex) public String logout(HttpServletResponse response){
+  Cookie cookie = new Cookie("memberId", null);
+  cookie.setMaxAge(0);
+  response.addCookie(cookie);
+  return "redirect:/"
+}
+
+
+[쿠키와 보안 문제]
+- 쿠키값은 임의로 변경 가능
+- 위와 같이 Cookie에 보관된 정보는 탈취가능
+- 한번 털린 Cookie를 해커가 계속 사용가능
+
+=> 쿠키에는 중요정보를 포함하지 않는 대신 사용자 별로 랜덤 값(토큰)을 넣어 매핑하여 사용, 해당 토큰값도 만료시간을 짧게 지정
+=> 세션으로 해결
+
+
+[세션 동작 방식]
+- 중요한 정보는 쿠키가 아닌 서버에 저장
+- 클라이언트와 서버는 추정 불가능한 임의의 식별자 값으로 연결해야 함
+
+-> 이 방법을 세션이라고 함
+
+* 세션 기능 : 세션 생성, 세션 조회, 세션 만료
+
+동작 과정 
+1. 로그인시 검증 후
+2. 세션id(UUID)를 key, 회원객체를 value로, 세션 저장소에 저장(Map등)
+3. 쿠키 생성 new Cookie(mySessionId, UUID)
+// 파라미터 : key로 사용할 string, 세션id
+4. 응답메시지에 쿠키 담아 전송
+5. 이후 클라이언트 요청시 세션저장소를 뒤져서 처리
+
+*UUID : 자바에서 지원하는 난수
+
+로그아웃 동작 과정
+1. 클라이언트가 보낸 쿠키에 담겨있는 세션id를 key로 세션 저장소에서 해당 세션 삭제
+
+=> 서블릿이 "세션"을 제공함
+
+
+[서블릿 HTTP 세션1] *사용
+
+로그인 성공시
+- 세션 생성 방법
+HttpSesion session = request.getSession();
+* HttpServletRequest 필요
+* 세션 존재시 존재 세션 사용, 없으면 신규 세션 생성
+
+- 세션 저장소에 저장
+session.setAttribute(세션id, 회원객체);		// key와 value
+
+로그아웃
+- 세션 소환
+HttpSession session = request.getSession(false);
+* getSession()의 argument : true_존재 세션이 없으면 새로 생성해 반환, false_없으면 null 반환 (true가 default값)
+
+- 해당 request의 세션 삭제
+if(session != null){
+  session.invalidate();
+}
+
+사용(로그인 후 화면, 마이 페이지 등등)
+- 세션 소환
+HttpSession session = request.getSession(false);
+
+- 세션이 없으면(비로그인 상태)
+if(session == null){
+  // 비로그인 상태 로직
+  // return //뷰 템플릿을 return하든, json 정보를 return하든 알아서
+}
+
+- 세션이 있으면(로그인 상태)
+Member member = session.getAttribute(세션id);
+// 로그인 상태 로직
+// 마찬가지로 알아서 필요한거 return
+
+
+[서블릿 HTTP 세션2] * 사용
+위를 좀 더 편하게 - 애노테이션
+
+사용 ex)
+public String homeLogin(
+	@SessionAttribute(name = 세션id, required = false) Member member)
+
+- 세션이 없으면(비로그인 상태)
+if(member == null){
+  //비로그인 상태 로직
+  // return //알아서 리턴
+}
+
+- 세션이 있으면(로그인 상태)
+//member로 서비스로직 실행
+// 마찬가지로 알아서 리턴
+
+
+* 처음 로그인시 url에 이상한거 붙음
+제거 방법 :
+application.properties에서
+server.servlet.session.tracking-modes=cookie 입력
+
+
+[세션 정보와 타임아웃 설정] * 사용
+마지막으로, 위 [쿠키와 보안문제] 에서 마지막 세션 만료부분 구현방법
+
+세션의 종료 시점 전략
+사용자가 서버에 요청한 시간 기준으로 30분 정도 유지
+
+방법
+application.properties에서
+server.servlet.session.timeout=60 #60초 기본은 1800(30분)
+# 분 단위로 설정해야 함 ex) 60(1분), 120(2분), ...)
+
+* 세션시간 : 기본은 30분이란 것을 고려하여 설정
+
+
+
+
+=> 그런데 인가되지 않은 정보에 비로그인 유저가 접근 가능한 것을 막는 기능이 없음 : 다음 섹션 필터&인터셉터
+근데 이거 세션 파라미터 null인지 아닌지 그걸로 하는거 아니였나.. 잘모르겠음 아무튼 다음 섹션에서
+
+
+
+
+
+
+
+
+
+
+
+

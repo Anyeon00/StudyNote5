@@ -1,0 +1,108 @@
+앞에거 그냥 보고 따라치기만하고 V4보고나서 필요한거 메모
+
+소개
+
+Bean Validation이란? 검증 애노테이션과 인터페이스들의 모음
+-> 구현체 : 하이버네이트 Validator
+
+하이버네이트 Validator 관련 링크
+공식 메뉴얼
+: https://docs.jboss.org/hibernate/validator/6.2/reference/en-US/html_single/
+검증 애노테이션 모음 
+: https://docs.jboss.org/hibernate/validator/6.2/reference/en-US/html_single/#validator-defineconstraints-spec
+
+
+
+
+--------------------------------------------------------------------
+사용 @ModelAttribute인 경우(url쿼리스트링 or html form으로 오는 쿼리스트링 형태의 데이터)
+
+1. 의존관계 추가 : Validation
+
+2. 필드 오류 검증
+DTO 객체 필드에 "검증 애노테이션" 작성 (DTO객체 _MVC1편 섹션6-4 메모 마지막부분 참고)
+- @NotBlank : 빈값 + 공백만 있는 경우를 허용하지 않음
+- @NotNull : null을 허용하지 않음
+- @Range(min = 1000, max = 1000000)
+- @Max(9999)
+- 등등 검색
+
+* 오류 메시지 기능
+: 검증 애노테이션의 속성에 추가
+ex) @NotBlank(message = "공백X")
+
+* error.properties에 에러출력메시지 작성(필요시) (섹션4-4 참고) 
+
+* 특정 필드가 아닌 복합 룰 검증(필요시)
+ex) price * quantity >= 10000
+컨트롤러에서 조건문작성, 에러시 BindingResult객체의 reject함수로 에러메시지 출력
+-> 메서드로 따로 뽑아서 사용
+
+
+3. 컨트롤러의 DTO 객체 파라미터앞에 @Validated(또는 @Valid) 작성
+ex) public String addItem(@Validated @ModelAttribute Item item)
+
+4. 컨트롤러의 DTO 객체 파라미터뒤에 BindingResult객체 추가
+ex) public String addItem(@Validated @ModelAttribute Item item, BindingResult bindingResult)
+
+5. 파라미터 필드 타입 바인딩 에러시, 처리 코드 추가(또는 6에서 예외처리)
+ex)
+if(bindingResult.hasErrors()) return bindingResult.getAllErrors();
+
+5. 에러 상황 두가지 각각 처리
+-1. 필드 검증 실패
+-2. 파라미터 필드 타입 바인딩 에러 
+* 각각 아래의 에러 상황 요약 참고하여 처리
+
+
+------------------------------------------------------------------------
+사용 @RequestBody인 경우(http body에 json으로 오는 데이터)
+
+위와 다른점
+(1) @ModelAttribute가 아닌 @RequestBody 사용
+*@ModelAttribute : HTTP 요청 파라미터(URL 쿼리스트링, POST Form)에서 사용
+@RequestBody : HTTP Body의 데이터(주로 JSON)를 객체로 변활할때 사용
+
+(2) 파라미터 필드타입 바인딩 에러시, 위와 달리 객체 생성자체가 안됨 따라서 컨트롤러가 호출되지 않고 예외가 터짐(파라미터가 안맞으므로)
+-> 마찬가지로 예외처리 섹션 8, 9 참고
+
+
+
+=> API의 경우 3가지 결과(참고)
+- 성공 요청: 성공
+- 실패 요청: JSON을 객체로 생성하는 것 자체가 실패함
+- 검증 오류 요청: JSON을 객체로 생성하는 것은 성공했고, 검증에서 실패함
+
+
+
+=> 에러 상황 요약
+1. @ModelAttribute 필드 검증 에러 -> 에러메시지(errors.properties 또는 검증 애노테이션의 message속성)
+2. @ModelAttribute 파라미터의 필드 타입 바인딩 에러 -> BindingResult객체에 담김
+3. @RequestBody 필드 검증 에러 -> 1과 동일
+4. @RequestBody 파라미터의 필드 타입 바인딩 에러 -> Exception 발생
+* 모두 각각 처리 방법이 있는지 섹션 8, 9 참고
+* 뇌피셜 : 1, 3인 경우는 model객체에 담기므로 model객체, 2는 BindingResult객체로 ResponseDTO만들어서 보내기? 4인 경우는 모르겠음
+
+
+
+
+
+
+-----------------------------------------------------------------
+원리 (검증 순서)
+1. ModelAttribute로 DTO객체의 필드에 타입변환해 주입
+- 성공하면 다음
+- 실패하면 BindingResult에 에러정보 추가
+
+2. Validator 적용
+- 검증 애노테이션에 따라 값 검증 
+
+* 따라서 타입변환에 성공해 객체 필드에 바인딩이 되어야 검증이 가능
+
+* 에러출력메시지 찾는 순서 :
+1. message.properties에서 찾기
+2. 못찾으면 검증 애노테이션의 message속성 사용
+
+
+
+

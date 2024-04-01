@@ -84,8 +84,11 @@ typeMismatch.java.lang.Integer=숫자를 입력해주세요.
 typeMismatch=타입 오류입니다.
 
 
-
-
+* 검증 애노테이션별로 에러메시지 추가
+ex) item객체의 itemName필드에 @NotBlank를 검증하는 경우
+NotBlank.item.itemName=상품 이름을 적어주세요.
+ex) 모든 @NotBlank를 검증하는 경우
+NotBalnk= 공백X
 
 
 => 오류코드 & 메시지 작성 요약
@@ -93,7 +96,7 @@ typeMismatch=타입 오류입니다.
 2. application.properties - spring.messages.basename=errors 입력
 3. errors.properties - 메시지 입력
 4. 오류코드&메시지 작성 - [오류코드와 메시지처리5, 6 참고]
-5. 코드만 사용하면 메시지가 레벨 우선순위에 따라 선택되어 사용됨
+5. 검증로직에서 코드만 사용하면 메시지가 레벨 우선순위에 따라 선택되어 사용됨
 -> 사용하는 부분은 다음 파트부터
 *application.properties만 고치면 모든 오류 메시지를 관리 가능
 
