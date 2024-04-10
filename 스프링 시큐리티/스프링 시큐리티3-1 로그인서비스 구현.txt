@@ -1,0 +1,49 @@
+[8 DB기반 로그인 검증 로직]		*6. 로그인 인증
+
+시큐리티를 통해 인증
+id,pwd를 받으면, 시큐리티가 DB를 조회해 pwd를 검증후, 세션을 저장함
+
+로그인 검증 기능 작성
+1. 로그인 검증 기능 Service 클래스 작성 (class CustomUserDetailsService)
+- implements UserDetailsService
+
+2. 인터페이스의 메서드 구현
+- 클래스에서 MemberRepository 주입
+- 메서드 구현 
+메서드 바디 ex)
+//메서드의 argument인 username으로 db에서 조회하여 검증
+Member findMember = memberRepository.findByUsername(username);
+
+if (findMember == null) {
+	//로그인 시도시, username이 존재하지 않으면 
+	return null;
+}
+//로그인 시도시, username이 존재하면 UserDetails객체를 만들어 반환
+//반환한 UserDetails객체로 로그인을 검증해줌
+return new MemberDetailsDTO(memberData);
+
+3. UserDetails객체 클래스 작성 (class MemberDetailsDTO)
+- 위에서 반환한 UserDetails객체로 pwd와 Role등을 검증 후, 쿠키를 보내고 세션에 저장해줌
+- implements UserDetails
+- UserEntity필드 생성 후, 생성자 파라미터를 통해 주입
+
+4. 인터페이스의 메서드 구현
+- getAuthorities() : 사용자의 권한들을 반환
+- getPassword()
+- getUsername()
+이하메서드들은 계정 만료 관련 메서드(만료가 되었는지 등) 
+따라서 필요할 때 찾아보기, 당장은 모두 true를 return
+- isAccountNonExpired()
+- isAccountNotLocked()
+- isCredentialsNonExpired()
+- isEnabled()
+
+* UserDetails객체 코드 자료 메모장 참고
+
+
+
+
+
+
+
+

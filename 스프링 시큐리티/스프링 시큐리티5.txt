@@ -1,0 +1,26 @@
+[11 csrf enable 설정 방법]	* 8 csrf 설정
+
+CSRF(Cross-Site Request Forgery)
+요청을 위조하여 사용자가 원하지 않아도 서버측으로 특정 요청을 강제로 보내는 방식
+ex) 회원 정보 변경, 게시글 CRUD를 사용자 모르게 요청
+
+설정을 안해주면 로그인에 성공해도 CSRF필터에서 막히게 됨
+- POST 요청에서 설정 방법
+csrf.token(csrf토큰)을 함께 넘기며 요청 해야 됨
+
+*csrf토큰 넘겨주기? 다시 받기?
+
+=> rest api 서버의 경우 보통 세션을 stateless로 관리하므로 csrf enable 설정을 진행하지 않아도됨, 즉 이 내용 무시하고 csrf필터를 무시하는 코드만 작성해주면 됨
+ex) SecurityConfig클래스의 public SecurityFilterChain filterChain() 메서드안에
+http.csrf((auth) -> auth.disable());
+
+
+[12 InMemory 방식 유저 정보 저장]
+DB서버 안 쓰고 토이 플젝에서 하는 경우
+
+[13 http basic 방식 로그인]
+필요 없음
+
+[14 Role Hierarchy(계층권한)]
+Role의 권한에 계층을 두고 싶은 경우
+필요하면 찾아보기

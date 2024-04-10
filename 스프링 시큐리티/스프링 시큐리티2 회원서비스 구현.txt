@@ -1,0 +1,42 @@
+[5 BCrypt 암호화 메소드]		*3. 사용자 비밀번호 암호화
+
+스프링 시큐리티는 사용자 비밀번호를 단방향 해시 암호화하여 저장 후 대조
+스프링 시큐리티는 암호화를 위해 BCrypt Password Encoder 객체를 제공
+따라서 해당 클래스를 Bean으로 등록 후 사용
+
+요약 : 비밀번호 암호화를 위해, (스프링이 제공하는)암호화 해주는 객체를 Bean으로 저장
+
+ex) 이전에 만든 SecurityConfigClass 클래스에서 
+@Bean
+public BCryptPasswordEncoder bCryptPasswordEncoder(){
+	return new BCryptPasswordEncoder();
+}
+
+* 메서드 : encode()
+
+
+[6 DB 연결]		*4. DB준비
+회원정보 저장을 위한 DB 준비
+
+
+[7 회원 가입 로직]		*5. 회원가입 로직 작성
+
+컨트롤러 작성
+(회원가입 폼을 제출 받는 컨트롤러 메서드 작성)
+- DTO로 받기 _스프링 MVC 1편-섹션6-4 참고
+- 인증 실패하면 다시 페이지로 redirect
+
+서비스 작성
+- 멤버 저장할 때, 비밀번호를 BCryptTasswordEncoder객체로 암호화 한 후 저장하기
+
+* 회원가입 경로도 [3 인가 작업]의 허용 경로에 추가하기
+* 회원 중복 검증 _아무데나 검증하는로직 추가 + 스프링 MVC2편 - 섹션5 참고
+
+
+
+
+
+
+
+
+
