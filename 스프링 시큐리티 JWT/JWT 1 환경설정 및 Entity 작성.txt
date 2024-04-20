@@ -1,0 +1,109 @@
+강의 링크 : https://www.youtube.com/watch?v=NPRh2v7PTZg&list=PLJkjrxxiBSFCcOjy0AAVGNtIa08VLk1EJ
+
+JWT(Jason Web Token)
+
+구조
+- Header : JWT임을 명시, 사용된 암호화 알고리즘 종류
+- Payload : 데이터
+- Verify Signature : 암호화키
+* ~.~.~ 처럼 . 으로 3개 구분
+
+사용 이유 : 
+1. 모바일 환경에서 많이 사용(모바일에서는 JWT 탈취 우려가 없음)
+2. 장시간 로그인으로 인한 세션 과부하가 일어날 일이 없음
+3. HTTP는 기본적으로 stateless를 지향하므로 
+(로그인 시 그 세션을 저장하고 있는 방식보다 state-less하므로)
+(사실 3번은 부수적인 효과)
+
+주의점 : 토큰 내용은 외부에서 디코딩 가능하므로 기밀 정보 X
+-> 그럼 왜 쓰느냐? 토큰 발급처를 확인검증하기 위해
+
+
+[실습목표]
+
+스프링 시큐리티를 활용해 JWT 기반의 인증/인가를 구현
+서버는 Rest API 서버 형태 (프론트는 구현X)
+
+인증 : 로그인
+인가 : JWT를 통한 경로별 접근 권한
+회원가입
+
+* JWT 구현 방법은 다양함(가장 기본적인 뼈대 코드로 진행)
+* 단일 토큰 방식(보통 Access, Refresh 2개로 사용)
+* 암호화 키 : 양방향 - 대칭키 방식 사용 : HS256 _JWT 암호화 방식 메모 참고
+* JWT 버전 : 최신 버전 사용 0.12.3
+
+
+[1 동작 원리]
+회원가입 (세션 방식과 JWT방식의 차이 X)
+JoinController - JoinService - UserEntity - UserRepository
+
+로그인
+1. Authentication Manager에서 회원 검증
+AuthenticationFilter - Authentication Manager - UserDetailsService - UserEntity - UserRepository
+2. (검증 후) 토큰 응답
+Authentication Manager - succesfulAuth - JWTUtil
+* successfulAuth메서드로 JWTUtil로 토큰을 받아와서 그 토큰을 응답
+(로그인 성공 후,  JWT방식은 토큰을 생성해 응답, 세션 방식은 세션서버 세션이 유저 정보를 저장)
+* 만약 검증 실패시 unSuccessfulAuth 메서드로 401 코드 응답
+
+인가
+1. 특정 경로 요청시, JWTFilter에서 토큰 검증 후 SecurityContextHolder에 일시적 세션 생성
+AuthenticationFilter - JWTFilter - SecurityContextHolder
+2. 컨트롤러 진입 후 위 세션으로 인증
+* 요청이 끝나면 해당 세션은 바로 소멸됨
+
+
+[2 프로젝트 생성]
+JWT 의존성 직접 추가	//0.11.5버전, 0.12.3버전 존재
+dependencies{
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+}
+
+
+[3 Security Config 클래스]	* 스프링 시큐리티1 메모 참고
+ex)
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+	//csrf disable _JWT 방식은 방어할 필요 X
+        http.csrf((auth) -> auth.disable());
+
+	//form 로그인 방식 disable
+        http.formLogin((auth) -> auth.disable());
+
+	//http basic 인증 방식 disable
+        http.httpBasic((auth) -> auth.disable());
+
+	//경로별 인가 작업
+        http.authorizeHttpRequests((auth) -> auth
+                        .requestMatchers("/login", "/", "/join").permitAll()
+			.requestMatchers("/admin").hasRole("ADMIN")
+                        .anyRequest().authenticated());
+
+	//세션 설정	_JWT에서는 stateless 상태로 관리(가장 중요)
+        http.sessionManagement((session) -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        return http.build();
+    }
+
+    @Bean
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
+
+        return new BCryptPasswordEncoder();
+    }
+}
+
+[4 Postman 설치]
+[5 DB연결 및 Entity 작성]
+
+
+
+

@@ -1,0 +1,62 @@
+[6 회원가입 로직 구현]
+
+*스프링 시큐리티2 회원서비스 구현 메모 참고
+- JpaRepository에 메서드 추가
+Boolean existsByUsername(String username);
+
+[7 로그인 필터 구현]
+* 로그인 로직 구현 순서
+- 아이디, 비밀번호 검증을 위한 커스텀 필터 작성
+- DB에 저장되어 있는 회원 정보를 기반으로 검증할 로직 작성
+- 로그인 성공시 JWT를 반환할 success 핸들러 생성
+- 커스텀 필터 SecurityConfig에 등록(url 경로 인가 필터)
+
+
+AuthenticationFilter (LoginFilter)구현	_JWT2-2 코드자료 참고
+* UsernamePasswordAuthenticationFilter : 이전에 한, Form Login에 사용된 필터
+-> 이를 상속받은 필터를 구현
+
+-1. jwt 패키지 생성 - LoginFilter 클래스 생성
+-2. UsernamePasswordAuthenticationFilter 상속
+-3. AuthenticationManger객체 데이터멤버로 주입
+
+-4. 메서드 오버라이딩
+4-1. public Authentication attemptAuthentication(~) throws ~
+* AuthenticationManager로 username과 password 검증 로직 작성
+4-2. protected void successfulAuthentication(~) throws ~
+* JWT 토큰 생성 후 응답
+4-3. protected void unsuccessfulAuthentication(~) throws ~
+
+-5. SecurityConfig 클래스에 AuthenticationManager 빈 등록
+ex)
+@Bean
+public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+	return configuration.getAuthenticationManager();
+}
+
+-6. SecurityConfig 클래스에서 AuthenticationConfiguration객체 주입
+ex) private final AuthenticationConfiguration authenticationConfiguration
+
+-7. SecurityConfig 클래스에 필터 등록
+ex) http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class);
+
+
+[8 DB기반 로그인 검증 로직]
+
+1. 로그인 검증 기능 작성
+- implements UserDetailsService
+* 스프링 시큐리티3-1 참고
+
+2. UserDetails객체 클래스 작성
+- implements UserDetails
+* 스프링 시큐리티3-1 참고
+
+* 컨트롤러에서 url메서드(/login)를 생성할 필요 없음
+-> Spring Security가 /login으로 요청이 오면 로그인을 알아서 진행시킨다
+(http body에 form-data로, key는 username, password 2개)
+성공 시, 구현한 LoginFilter의 successful()메서드에서 jwt토큰을 헤더에 담아 반환
+
+
+
+
+

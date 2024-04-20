@@ -27,12 +27,12 @@ public class MemberDetailsDTO implements UserDetails {
 
     @Override
     public String getUsername() {
-        return userEntity.getUsername();
+        return userEntity.getUsername();	//시큐리티에선 username을 userid로 사용함 참고해서 return UserId()로 바꾸든 하기
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return true;
+        return true;		//아래도 다 true로 변경해줘야함
     }
 
     @Override

@@ -1,0 +1,65 @@
+[12 세션 정보]
+
+컨트롤러에서 세션정보 확인하기(현재 로그인 이용자의 username, role 뽑기)
+ex) 컨트롤러에서
+String username = SecurityContextHolder.getContext().getAuthentication().getName();
+* 유저 아이디 뽑기
+
+Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+Iterator<? extends GrantedAuthority> iter = authorities.iterator();
+GrantedAuthority auth = iter.next();
+String role = auth.getAuthority();
+* 유저 role 뽑기
+
+
+[13 CORS 설정]
+CORS (Cross-origin resource sharing) : 교차 출처 리소스 공유
+
+발생 원리
+: 클라이언트가 페이지 요청 - 프론트가 반환 - 클라이언트가 데이터 요청 - 백엔드에서 반환
+-> 이때 프론트와 백이 사용하는 포트 번호가 다름, 따라서 클라이언트에서 CORS를 금지 시킴
+=> 백엔드에서 CORS 설정을 처리해줘야함
+
+
+설정 방법
+1. SecurityConfigure클래스에서 처리	//여기서 안하면 토큰이 return되지 않음
+ex) SecurityConfig클래스에서
+http.cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+
+                    @Override
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+
+                        CorsConfiguration configuration = new CorsConfiguration();
+
+			//허용할 프론트엔드 서버의 포트번호
+                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
+			//허용할 http 메서드 _*는 전부 허용
+                        configuration.setAllowedMethods(Collections.singletonList("*"));
+                        configuration.setAllowCredentials(true);
+                        configuration.setAllowedHeaders(Collections.singletonList("*"));
+                        configuration.setMaxAge(3600L);
+
+			//Authorizatinon 헤더를 사용하므로 추가
+			configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+
+                        return configuration;
+                    }
+                })));
+
+2. WebMvcConfigure클래스에서 처리	//그냥 해줘야함
+- CorsMvcConfiguration 클래스 작성
+ex)
+@Configuration
+public class CorsMvcConfig implements WebMvcConfigurer {
+    
+    @Override
+    public void addCorsMappings(CorsRegistry corsRegistry) {
+        
+	//모든 컨트롤러의 경로에 대해서, 프론트엔드 서버의 포트번호에 대해 cors 허용
+        corsRegistry.addMapping("/**")
+                .allowedOrigins("http://localhost:3000");
+    }
+}
+
+

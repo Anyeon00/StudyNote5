@@ -27,7 +27,7 @@ public BCryptPasswordEncoder bCryptPasswordEncoder(){
 - 인증 실패하면 다시 페이지로 redirect
 
 서비스 작성
-- 멤버 저장할 때, 비밀번호를 BCryptTasswordEncoder객체로 암호화 한 후 저장하기
+- 멤버 저장할 때, 비밀번호를 BCryptPasswordEncoder객체로 암호화 한 후 저장하기
 
 * 회원가입 경로도 [3 인가 작업]의 허용 경로에 추가하기
 * 회원 중복 검증 _아무데나 검증하는로직 추가 + 스프링 MVC2편 - 섹션5 참고

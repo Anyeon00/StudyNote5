@@ -1,0 +1,38 @@
+[11 JWT 검증 필터]
+url 경로 인가 필터 구현
+
+1. 특정 경로 요청시, JWTFilter에서 토큰 검증 후 SecurityContextHolder에 일시적 세션 생성
+AuthenticationFilter - JWTFilter - SecurityContextHolder
+2. 컨트롤러 진입 후 위 세션으로 인증
+* 요청이 끝나면 해당 세션은 바로 소멸됨
+(JWT 1 환경 설정 및 Entity 작성의 동작 원리 파트 메모)
+
+JWTFilter 클래스 작성 _JWT4-2 코드 자료 참고
+1. jwt 패키지에 JWTFilter 클래스 생성
+
+2. extends OncePerRequestFilter
+
+3. JWTUtil 클래스 데이터 멤버로 주입
+ex) private final JWTUtil jwtUtil;
+
+4. abstract 메서드 오버라이딩(doFilterInternal() 메서드)
+- request에서 Authorization 헤더를 꺼내기
+- Authorization 헤더 검증 (검증 실패시 다음 필터체인으로 넘기기)
+- Bearer 부분 제거 후 순수 토큰만 획득
+- 토큰 소멸 시간 검증 (검증 실패시 다음 필터체인으로 넘기기)
+- 토큰에서 username과 role 획득
+- userEntity를 생성하여 데이터멤버 값 세팅
+(유저 password는 아무거나 넣어줘도 된다고함 이유가 있음)
+- UserDetails에 회원 정보 객체 담기
+- 스프링 시큐리티 인증 토큰 생성
+- 세션에 사용자 등록
+- 다 끝난 후, 다음 필터체인으로 넘기기
+
+5. SecurityConfig 클래스에 JWTFilter 등록
+ex) 
+http.addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+
+
+* 인가 Postman 테스트 방법
+로그인 성공 시 받은 응답에서, 응답헤더에 Authorization에 jwt토큰이 담겨 옴
+이를 다시 요청헤더의 Authorization키의 value에 복붙해서 요청

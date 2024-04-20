@@ -20,7 +20,7 @@ if (findMember == null) {
 }
 //로그인 시도시, username이 존재하면 UserDetails객체를 만들어 반환
 //반환한 UserDetails객체로 로그인을 검증해줌
-return new MemberDetailsDTO(memberData);
+return new MemberDetailsDTO(findMember);
 
 3. UserDetails객체 클래스 작성 (class MemberDetailsDTO)
 - 위에서 반환한 UserDetails객체로 pwd와 Role등을 검증 후, 쿠키를 보내고 세션에 저장해줌
@@ -39,6 +39,9 @@ return new MemberDetailsDTO(memberData);
 - isEnabled()
 
 * UserDetails객체 코드 자료 메모장 참고
+
+*컨트롤러에서 url메서드(/login)를 생성할 필요 없음
+-> Spring Security가 /login으로 요청이 오면 로그인을 알아서 진행시킨다
 
 
 
