@@ -85,6 +85,7 @@ public String modelAttribute(@ModelAttribute HelloData helloData){
   return "ok";
 }
 
+* Model 객체에도 자동으로 들어감
 
 * @ModelAttribute 생략가능
 ex) public String modelAttribute(HelloData helloData)
